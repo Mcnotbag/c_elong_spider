@@ -16,6 +16,7 @@ class ElSpider(scrapy.Spider):
     allowed_domains = ['elong.com']
     start_urls = ['http://m.elong.com/hotel']
     cur_cityid = None
+    cur_page = None
     def parse(self, response):
         self.cur_cityid = self.get_city()
         hotel_list_url = 'http://m.elong.com/hotel/api/list?_rt=1527472905302&indate={Indate}&t=1527472904279&outdate={Outdate}&city={cityId}&pageindex=0&actionName=h5%3D%3Ebrand%3D%3EgetHotelList&ctripToken=&elongToken=dc8bc8aa-b5cb-4cc0-a09e-4291a67df718&esdnum=9168910'.format(Indate=datetime.date.today(),Outdate=datetime.date.today() + datetime.timedelta(days=1),cityId=self.cur_cityid)
@@ -30,6 +31,7 @@ class ElSpider(scrapy.Spider):
         try:
             hotels_list = html_json["hotelList"]
             page_str = html_json["hotelListUrlParameter"]["pageindex"]
+            self.cur_page = page_str
         except Exception as e:
             print(e)
             with open("list_error.html","w",encoding="utf-8") as f:
@@ -109,32 +111,46 @@ class ElSpider(scrapy.Spider):
         html_str = response.body.decode()
         html_json = json.loads(html_str)
         room_list = html_json["roomInfoList"]
-        for room in room_list:
-            item["Room"] = {}
-            item["Room"]["RId"] = room["roomId"]
-            item["Room"]["RId"] = item["HId"] + item["Room"]["RId"]
-            item["Room"]["Rname"] = room["roomInfoName"]
-            item["Room"]["Rarea"] = room["area"]
-            item["Room"]["Rbed"] = room["bed"]
-            item["Room"]["Cover"] = room["coverImageUrl"]
-            item["Room"]["images"] = room["imageList"]
-            item["Room"]["price"] = room["minAveragePriceSubTotal"]
-            # 一些必要的信息
-            floor = str(room["rpList"][0]["additionInfoList"])
-            item["Room"]["floor"] = re.findall(r"{'key': 'floor', 'desp': '楼层', 'content': '(.*?)'}",floor)[0] if "floor" in floor else ''
-            item["Room"]["People"] = re.findall(r"{'key': 'personnum', 'desp': '可入住人数', 'content': '可入住(.*?)人'}",floor)[0] if "personnum" in floor else 0
-            for rprice in room["rpList"]:
-                item["Room"]["Ptype"] = {}
-                addinfo = str(rprice["additionInfoList"])
-                item["Room"]["Ptype"]["breakfast"] = re.findall(r"{'key': 'breakfast', 'desp': '早餐', 'content': '(.*?)'}",addinfo)[0] if "breakfast" in addinfo else '无'
-                item["Room"]["Ptype"]["PId"] = rprice["ratePlanId"]
-                item["Room"]["Ptype"]["PId"] = str(item["Room"]["RId"]) + str(item["Room"]["Ptype"]["PId"])
-                item["Room"]["Ptype"]["rule"] = rprice["cancelTag"]
-                item["Room"]["Ptype"]["price"] = rprice["averagePriceSubTotal"]
-                item["Room"]["Ptype"]["Pname"] = rprice["productName"]
-                item["Room"]["Ptype"]["Pname"] = item["Room"]["Rname"] + item["Room"]["Ptype"]["Pname"]
+        if room_list:
+            for room in room_list:
+                item["Room"] = {}
+                item["Room"]["RId"] = room["roomId"]
+                item["Room"]["RId"] = item["HId"] + item["Room"]["RId"]
+                item["Room"]["Rname"] = room["roomInfoName"]
+                item["Room"]["Rarea"] = room["area"]
+                item["Room"]["Rbed"] = room["bed"]
+                item["Room"]["Cover"] = room["coverImageUrl"]
+                item["Room"]["images"] = room["imageList"]
+                item["Room"]["price"] = room["minAveragePriceSubTotal"]
+                # 一些必要的信息
+                floor = str(room["rpList"][0]["additionInfoList"])
+                item["Room"]["floor"] = re.findall(r"{'key': 'floor', 'desp': '楼层', 'content': '(.*?)'}",floor)[0] if "floor" in floor else ''
+                item["Room"]["People"] = re.findall(r"{'key': 'personnum', 'desp': '可入住人数', 'content': '可入住(.*?)人'}",floor)[0] if "personnum" in floor else 0
+                for rprice in room["rpList"]:
+                    item["Room"]["Ptype"] = {}
+                    addinfo = str(rprice["additionInfoList"])
+                    item["Room"]["Ptype"]["breakfast"] = re.findall(r"{'key': 'breakfast', 'desp': '早餐', 'content': '(.*?)'}",addinfo)[0] if "breakfast" in addinfo else '无'
+                    item["Room"]["Ptype"]["PId"] = rprice["ratePlanId"]
+                    item["Room"]["Ptype"]["PId"] = str(item["Room"]["RId"]) + str(item["Room"]["Ptype"]["PId"])
+                    item["Room"]["Ptype"]["rule"] = rprice["cancelTag"]
+                    item["Room"]["Ptype"]["price"] = rprice["averagePriceSubTotal"]
+                    item["Room"]["Ptype"]["Pname"] = rprice["productName"]
+                    item["Room"]["Ptype"]["Pname"] = item["Room"]["Rname"] + item["Room"]["Ptype"]["Pname"]
 
-                yield deepcopy(item)
+                    yield deepcopy(item)
+
+        else:
+            with open("detail_error.html","w",encoding="utf-8") as f:
+                f.write(html_str)
+            hotel_list_url = 'http://m.elong.com/hotel/api/list?_rt=1527472905302&indate={Indate}&t=1527472904279&outdate={Outdate}&city={cityId}&pageindex={page}&actionName=h5%3D%3Ebrand%3D%3EgetHotelList&ctripToken=&elongToken=dc8bc8aa-b5cb-4cc0-a09e-4291a67df718&esdnum=9168910'.format(
+                page=int(self.cur_page) + 1, Indate=datetime.date.today(),
+                Outdate=datetime.date.today() + datetime.timedelta(days=1), cityId=self.cur_cityid)
+            yield scrapy.Request(
+                hotel_list_url,
+                meta={"dont_redirect": True},
+                callback=self.parse_list,
+                errback=self.parse_error
+            )
 
     def parse_error(self,error):
         print("没有请求成功,可能跳转了")
