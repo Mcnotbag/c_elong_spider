@@ -18,6 +18,9 @@ class ElongPipeline(object):
     def process_item(self, item, spider):
 
         item["Roomtotal"] = ''
+        # 对城市进行清洗
+        # if item["City"] == "香港" or item["City"] == "台湾":
+        #     item["City"] = item["City"] + "市"
         # 对酒店等级进行清洗
         if str(item["Level"]) == "-14" or str(item["Level"]) == "14":
             item["Level"] = "高档公寓"
@@ -35,6 +38,9 @@ class ElongPipeline(object):
             item["Level"] = "豪华型"
         elif str(item["Level"]) == "-13" or str(item["Level"]) == "13":
             item["Level"] = "舒适公寓"
+        # 对住房人数进行清洗
+        if len(str(item["Room"]["People"])) > 1:
+            item["Room"]["People"] = item["Room"]["People"][0]
         # 操作数据库
         self.insert_hotel(item)
         self.insert_room(item)
@@ -46,7 +52,7 @@ class ElongPipeline(object):
     def insert_hotel(self,item):
         insert = "INSERT INTO Hotel (Source, HId, City, Name, Cover, [Level], Score, Address, Price, Phone, KYDate," \
                  + "RoomCount, ZXDate, Latitude, Longitude, Url, Description) values ('%d','%s','%s','%s','%s','%s','%f','%s','%.2f','%s','%s','%s','%s','%f','%f','%s','%s')" % (
-            int((item["Source"])), item["HId"], str(item["City"][:-1]), str(item["Hname"]), str(item["Cover"]),
+            int((item["Source"])), item["HId"], str(item["City"]), str(item["Hname"]), str(item["Cover"]),
             str(item["Level"]), float(item["Score"]), str(item["Address"]), float(item["index_price"]),
             str(item["HTel"]), str(item["KYdate"]), \
             str(item["Roomtotal"]), str(item["KYdate"]), float(item["Latitude"]), float(item["Longitude"]),
@@ -75,6 +81,11 @@ class ElongPipeline(object):
             print(e)
 
     def insert_room(self, item):
+        try:
+            int(item["Room"]["People"])
+        except Exception as e:
+            print("*"*20)
+            print("看看到底哪里错了 --%s"%item["Room"]["People"])
 
         insert = "INSERT INTO Room (Source, HId, RId, Cover, Name, Floor, Area, Price, People, Bed) VALUES ('%d','%d','%d','%s','%s','%s','%s','%.2f','%d','%s')" % (
             int((item["Source"])), int(item["HId"]), int(item["Room"]["RId"]), str(item["Room"]["Cover"]),

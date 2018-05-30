@@ -54,12 +54,12 @@ class ElSpider(scrapy.Spider):
                 }
                 other_url = "http://m.elong.com/hotel/{HId}/".format(HId=item["HId"])
                 response_other = requests.get(other_url,headers=headers_hotel)
-                item["Address"] = re.findall(r'<div class="addr">(.*?)</div>',response_other.content.decode())[0]
-                item["HTel"] = re.findall(r"hotelTel : '(.*?)'",response_other.content.decode())[0]
-                item["Description"] = re.findall(r'"featureInfo":"(.*?)"',response_other.content.decode())[0]
-                item["Facilities"] = re.findall(r'"generalAmenities":"(.*?)"',response_other.content.decode())[0]
-                item["City"] = re.findall(r'province=;city=(.*?);',response_other.content.decode())[0]
-                item["KYdate"] = re.findall(r'<dd>酒店开业时间 (.*?)年 </dd>', response_other.content.decode())[0]
+                item["Address"] = re.findall(r'<div class="addr">(.*?)</div>',response_other.content.decode())[0] if re.findall(r'<div class="addr">(.*?)</div>',response_other.content.decode()) != [] else ''
+                item["HTel"] = re.findall(r"hotelTel : '(.*?)'",response_other.content.decode())[0] if re.findall(r"hotelTel : '(.*?)'",response_other.content.decode()) != [] else ''
+                item["Description"] = re.findall(r'"featureInfo":"(.*?)"',response_other.content.decode())[0] if re.findall(r'"featureInfo":"(.*?)"',response_other.content.decode()) != [] else ''
+                item["Facilities"] = re.findall(r'"generalAmenities":"(.*?)"',response_other.content.decode())[0] if re.findall(r'"generalAmenities":"(.*?)"',response_other.content.decode()) != [] else ''
+                item["City"] = re.findall(r'province=;city=(.*?);',response_other.content.decode())[0] if re.findall(r'province=;city=(.*?);',response_other.content.decode()) != [] else ''
+                item["KYdate"] = re.findall(r'<dd>酒店开业时间 (.*?)年 </dd>', response_other.content.decode())[0] if re.findall(r'<dd>酒店开业时间 (.*?)年 </dd>', response_other.content.decode()) != [] else ''
                 item["ZXdate"] = item["KYdate"]
                 # pprint(item)
                 detail_hotel_url = "http://m.elong.com/hotel/api/hoteldetailroomlist?_rt=1527476977933&hotelid={HId}&indate={Indate}&outdate={Outdate}&actionName=h5%3D%3Ebrand%3D%3EgetHotelDetail&ctripToken=&elongToken=dc8bc8aa-b5cb-4cc0-a09e-4291a67df718&esdnum=7556144".format(HId=item["HId"],Indate=datetime.date.today(),Outdate=datetime.date.today() + datetime.timedelta(days=1))
@@ -122,7 +122,7 @@ class ElSpider(scrapy.Spider):
             # 一些必要的信息
             floor = str(room["rpList"][0]["additionInfoList"])
             item["Room"]["floor"] = re.findall(r"{'key': 'floor', 'desp': '楼层', 'content': '(.*?)'}",floor)[0] if "floor" in floor else ''
-            item["Room"]["People"] = re.findall(r"{'key': 'personnum', 'desp': '可入住人数', 'content': '可入住(\d+)人'}",floor)[0] if "personnum" in floor else 0
+            item["Room"]["People"] = re.findall(r"{'key': 'personnum', 'desp': '可入住人数', 'content': '可入住(.*?)人'}",floor)[0] if "personnum" in floor else 0
             for rprice in room["rpList"]:
                 item["Room"]["Ptype"] = {}
                 addinfo = str(rprice["additionInfoList"])

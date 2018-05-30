@@ -42,3 +42,5 @@ import requests
 # hotel_list_url = 'http://m.elong.com/hotel/api/list?_rt=1527472905302&indate={Indate}&t=1527472904279&outdate={Outdate}&city={cityId}&pageindex=0&actionName=h5%3D%3Ebrand%3D%3EgetHotelList&ctripToken=&elongToken=dc8bc8aa-b5cb-4cc0-a09e-4291a67df718&esdnum=9168910'.format(Indate=datetime.date.today(), Outdate=datetime.date.today() + datetime.timedelta(days=1), cityId=2003)
 #
 # print(hotel_list_url)
+
+
