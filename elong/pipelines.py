@@ -39,8 +39,10 @@ class ElongPipeline(object):
         elif str(item["Level"]) == "-13" or str(item["Level"]) == "13":
             item["Level"] = "舒适公寓"
         # 对住房人数进行清洗
+
         if len(str(item["Room"]["People"])) > 1:
             item["Room"]["People"] = item["Room"]["People"][0]
+
         # 操作数据库
         self.insert_hotel(item)
         self.insert_room(item)
