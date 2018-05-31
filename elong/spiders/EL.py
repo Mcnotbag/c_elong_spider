@@ -31,7 +31,8 @@ class ElSpider(scrapy.Spider):
         try:
             hotels_list = html_json["hotelList"]
             page_str = html_json["hotelListUrlParameter"]["pageindex"]
-            self.cur_page = page_str
+            if page_str:
+                self.cur_page = page_str
         except Exception as e:
             print(e)
             with open("list_error.html","w",encoding="utf-8") as f:
