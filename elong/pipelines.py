@@ -79,7 +79,6 @@ class ElongPipeline(object):
             self.conn.commit()
         except Exception as e:
             print("更新失败Hotel")
-            print(str(item["Phone"]))
             print(e)
 
     def insert_room(self, item):
@@ -89,8 +88,8 @@ class ElongPipeline(object):
             print("*"*20)
             print("看看到底哪里错了 --%s"%item["Room"]["People"])
 
-        insert = "INSERT INTO Room (Source, HId, RId, Cover, Name, Floor, Area, Price, People, Bed) VALUES ('%d','%d','%d','%s','%s','%s','%s','%.2f','%d','%s')" % (
-            int((item["Source"])), int(item["HId"]), int(item["Room"]["RId"]), str(item["Room"]["Cover"]),
+        insert = "INSERT INTO Room (Source, HId, RId, Cover, Name, Floor, Area, Price, People, Bed) VALUES ('%d','%s','%s','%s','%s','%s','%s','%.2f','%d','%s')" % (
+            int((item["Source"])), str(item["HId"]), str(item["Room"]["RId"]), str(item["Room"]["Cover"]),
             str(item["Room"]["Rname"]),
             str(item["Room"]["floor"]), str(item["Room"]["Rarea"]), float(item["Room"]["price"]),
             int(item["Room"]["People"]), str(item["Room"]["Rbed"])
@@ -105,7 +104,7 @@ class ElongPipeline(object):
         self.conn.commit()
 
     def update_room(self,item):
-        update = "update Room set Cover='%s',Name='%s',Price='%.2f',UpdateTime='%s' where RId='%s'" %(str(item["Room"]["Cover"]),str(item["Room"]["Rname"]),float(item["Room"]["price"]),str(datetime.datetime.now())[:23],int(item["Room"]["RId"]))
+        update = "update Room set Cover='%s',Name='%s',Price='%.2f',UpdateTime='%s' where RId='%s'" %(str(item["Room"]["Cover"]),str(item["Room"]["Rname"]),float(item["Room"]["price"]),str(datetime.datetime.now())[:23],str(item["Room"]["RId"]))
         try:
             self.cur.execute(update)
             # print("更新成功Room")

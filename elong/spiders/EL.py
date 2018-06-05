@@ -161,8 +161,12 @@ class ElSpider(scrapy.Spider):
                     item["Room"]["Ptype"]["Pname"] = item["Room"]["Rname"] + item["Room"]["Ptype"]["Pname"]
 
 
-                    yield deepcopy(item)
-
+                    # yield deepcopy(item)
+                    print("-"*10)
+                    print(item["Hname"])
+                    print(item["HId"])
+                    print(item["Room"]["RId"])
+                    print(item["Room"]["Ptype"]["PId"])
         else:
             with open("detail_error.html","w",encoding="utf-8") as f:
                 f.write(html_str)
