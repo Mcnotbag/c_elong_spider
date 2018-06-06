@@ -44,9 +44,9 @@ class ElongPipeline(object):
             item["Room"]["People"] = item["Room"]["People"][0]
 
         # 操作数据库
-        self.insert_hotel(item)
-        self.insert_room(item)
-        self.insert_price(item)
+        self.unite_sql_hotel(item)
+        self.unite_sql_room(item)
+        self.unite_sql_price(item)
         for image in item["Room"]["images"]:
             self.insert_image(item,image)
         return item
@@ -54,7 +54,7 @@ class ElongPipeline(object):
     def insert_hotel(self,item):
         insert = "INSERT INTO Hotel (Source, HId, City, Name, Cover, [Level], Score, Address, Price, Phone, KYDate," \
                  + "RoomCount, ZXDate, Latitude, Longitude, Url, Description) values ('%d','%s','%s','%s','%s','%s','%f','%s','%.2f','%s','%s','%s','%s','%f','%f','%s','%s')" % (
-            int((item["Source"])), item["HId"], str(item["City"]), str(item["Hname"]), str(item["Cover"]),
+            int((item["Source"])), str(item["HId"]), str(item["City"]), str(item["Hname"]), str(item["Cover"]),
             str(item["Level"]), float(item["Score"]), str(item["Address"]), float(item["index_price"]),
             str(item["HTel"]), str(item["KYdate"]), \
             str(item["Roomtotal"]), str(item["KYdate"]), float(item["Latitude"]), float(item["Longitude"]),
@@ -151,5 +151,56 @@ class ElongPipeline(object):
             # print(e)
             # print("插入失败Image")
             pass
+        self.conn.commit()
+
+    def unite_sql_hotel(self,item):
+        sql = "if exists(select top 1 * from HotelSpider.dbo.Hotel where HId = '%s')" %str(item["HId"]) + \
+              " begin update Hotel set Score='%f',Price='%.2f',Phone='%s',ZXDate='%s',RoomCount='%s',UpdateTime='%s' where HId='%s' end" %(
+            float(str(item["Score"])),float(item["index_price"]),str(item["HTel"]),str(item["ZXdate"]),str(item["Roomtotal"]),
+            str(datetime.datetime.now())[:23],str(item["HId"]))+ \
+              " else begin INSERT INTO Hotel (Source, HId, City, Name, Cover, [Level], Score, Address, Price, Phone, KYDate," \
+                 + "RoomCount, ZXDate, Latitude, Longitude, Url, Description) values ('%d','%s','%s','%s','%s','%s','%f','%s','%.2f','%s','%s','%s','%s','%f','%f','%s','%s') end" % (
+            int((item["Source"])), str(item["HId"]), str(item["City"]), str(item["Hname"]), str(item["Cover"]),
+            str(item["Level"]), float(item["Score"]), str(item["Address"]), float(item["index_price"]),
+            str(item["HTel"]), str(item["KYdate"]), \
+            str(item["Roomtotal"]), str(item["KYdate"]), float(item["Latitude"]), float(item["Longitude"]),
+            str(item["Url"]), str(item["Description"])
+        )
+        try:
+            self.cur.execute(sql)
+        except Exception as e:
+            print("执行失败hotel")
+            print(e)
+        self.conn.commit()
+
+
+    def unite_sql_room(self,item):
+        sql = "if exists(select top 1 * from HotelSpider.dbo.Room where RId = '%s')" % str(item["Roomtype"]["RId"]) + \
+              " begin update Room set Cover='%s',Name='%s',Price='%.2f',UpdateTime='%s' where RId='%s' end" %(str(item["Room"]["Cover"]),str(item["Room"]["Rname"]),float(item["Room"]["price"]),str(datetime.datetime.now())[:23],str(item["Room"]["RId"]))+ \
+              " else begin INSERT INTO Room (Source, HId, RId, Cover, Name, Floor, Area, Price, People, Bed) VALUES ('%d','%s','%s','%s','%s','%s','%s','%.2f','%d','%s') end" % (
+            int((item["Source"])), str(item["HId"]), str(item["Room"]["RId"]), str(item["Room"]["Cover"]),
+            str(item["Room"]["Rname"]),
+            str(item["Room"]["floor"]), str(item["Room"]["Rarea"]), float(item["Room"]["price"]),
+            int(item["Room"]["People"]), str(item["Room"]["Rbed"])
+        )
+        try:
+            self.cur.execute(sql)
+        except Exception as e:
+            print("执行失败room")
+            print(e)
+        self.conn.commit()
+
+    def unite_sql_price(self,item):
+        sql = "if exists(select top 1 * from HotelSpider.dbo.Price where PId = '%s')" %str(item["Room"]["Ptype"]["PId"]) + \
+              " begin update Price set Name='%s',Price='%.2f',UpdateTime='%s' where PId='%s' end" %(str(item["Room"]["Ptype"]["Pname"]),float(item["Room"]["Ptype"]["price"]),str(datetime.datetime.now())[:23],str(item["Room"]["Ptype"]["PId"]))+ \
+              " else begin INSERT INTO Price (Source, HId, RId, PId, Name, Meal, [Rule], Price) VALUES ('%d','%s','%s','%s','%s','%s','%s','%.2f') end" %(
+            int((item["Source"])),str(item["HId"]),str(item["Room"]["RId"]),str(item["Room"]["Ptype"]["PId"]),str(item["Room"]["Ptype"]["Pname"]),str(item["Room"]["Ptype"]["breakfast"]), item["Room"]["Ptype"]["rule"] ,float(item["Room"]["Ptype"]["price"])
+        )
+
+        try:
+            self.cur.execute(sql)
+        except Exception as e:
+            print("执行失败price")
+            print(e)
         self.conn.commit()
 

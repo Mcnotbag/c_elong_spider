@@ -14,7 +14,7 @@ from redis import Redis
 #     need_city_list = {}
 #     need_city_list[hot_city["cityName"]] = hot_city["cityId"]
 #     print(need_city_list)
-#     redis_server.lpush("elong_hot_city",need_city_list)
+#     redis_server.lpush("elong_city",need_city_list)
 
 # city = redis_server.mget("elong_hot_city")
 # citys = redis_server.lpop("elong_hot_city")
