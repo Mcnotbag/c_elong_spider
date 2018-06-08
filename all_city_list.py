@@ -5,7 +5,8 @@ import requests
 from redis import Redis
 
 # redis_server = Redis(host="111.230.34.217",port=6379,decode_responses=True)
-# first_letter = string.ascii_uppercase
+# # first_letter = string.ascii_uppercase
+# first_letter = "STUVWXYZ"
 # url = "http://m.elong.com/hotel/api/gethotelcitysbyletter?_rt=1527589494989&letter={id}"
 #
 # for i in first_letter:

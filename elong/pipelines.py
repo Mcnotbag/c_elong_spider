@@ -175,7 +175,7 @@ class ElongPipeline(object):
 
 
     def unite_sql_room(self,item):
-        sql = "if exists(select top 1 * from HotelSpider.dbo.Room where RId = '%s')" % str(item["Roomtype"]["RId"]) + \
+        sql = "if exists(select top 1 * from HotelSpider.dbo.Room where RId = '%s')" % str(item["Room"]["RId"]) + \
               " begin update Room set Cover='%s',Name='%s',Price='%.2f',UpdateTime='%s' where RId='%s' end" %(str(item["Room"]["Cover"]),str(item["Room"]["Rname"]),float(item["Room"]["price"]),str(datetime.datetime.now())[:23],str(item["Room"]["RId"]))+ \
               " else begin INSERT INTO Room (Source, HId, RId, Cover, Name, Floor, Area, Price, People, Bed) VALUES ('%d','%s','%s','%s','%s','%s','%s','%.2f','%d','%s') end" % (
             int((item["Source"])), str(item["HId"]), str(item["Room"]["RId"]), str(item["Room"]["Cover"]),
