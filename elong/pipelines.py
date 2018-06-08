@@ -42,7 +42,8 @@ class ElongPipeline(object):
 
         if len(str(item["Room"]["People"])) > 1:
             item["Room"]["People"] = item["Room"]["People"][0]
-
+        # 对酒店详情进行清洗 Description
+        item["Description"] = item["Description"].replace(' ','').replace('\n','').replace("'",'')
         # 操作数据库
         self.unite_sql_hotel(item)
         self.unite_sql_room(item)
@@ -171,6 +172,7 @@ class ElongPipeline(object):
         except Exception as e:
             print("执行失败hotel")
             print(e)
+            print(item)
         self.conn.commit()
 
 
@@ -188,6 +190,7 @@ class ElongPipeline(object):
         except Exception as e:
             print("执行失败room")
             print(e)
+            print(item)
         self.conn.commit()
 
     def unite_sql_price(self,item):
@@ -202,5 +205,6 @@ class ElongPipeline(object):
         except Exception as e:
             print("执行失败price")
             print(e)
+            print(item)
         self.conn.commit()
 

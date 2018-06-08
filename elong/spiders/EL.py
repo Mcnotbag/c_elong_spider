@@ -94,7 +94,9 @@ class ElSpider(scrapy.Spider):
             # 翻页处理
             if not page_str:
                 page_str = 0
-            if len(hotels_list) == 20:
+            # 当页数为15的倍数时,hotels_list 的长度是 19  90页时是18  105,120页长度 16
+            # if len(hotels_list) == 20 or len(hotels_list) == 19:
+            if hotels_list:
                 print("*"*50)
                 print("当前页的酒店数为--%d"%len(hotels_list))
                 print("当前第---%s页"%(int(page_str)+1))
@@ -147,11 +149,11 @@ class ElSpider(scrapy.Spider):
                     item["Room"]["People"] = 0
                     item["Room"]["floor"] = ''
                     for info in addinfo:
-                        if "floor" in str(info) or "楼层" in str(info):
+                        if "floor" in str(info) or 'desp: "楼层"' in str(info):
                             item["Room"]["floor"] = info.get("content")
                         if "psnnum" in str(info) or "可入住人数" in str(info):
                             item["Room"]["People"] = info.get("content")
-                        if "breakfast" in str(info) or "早餐" in str(info):
+                        if "breakfast" in str(info) or 'desp: "早餐"' in str(info):
                             item["Room"]["Ptype"]["breakfast"] = info.get("content")
                     item["Room"]["Ptype"]["PId"] = rprice["ratePlanId"]
                     item["Room"]["Ptype"]["PId"] = str(item["Room"]["RId"]) + str(item["Room"]["Ptype"]["PId"])
