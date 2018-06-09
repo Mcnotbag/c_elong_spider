@@ -44,6 +44,16 @@ class ElongPipeline(object):
             item["Room"]["People"] = item["Room"]["People"][0]
         # 对酒店详情进行清洗 Description
         item["Description"] = item["Description"].replace(' ','').replace('\n','').replace("'",'')
+
+        # 对酒店名字进行清洗 Hname
+        item["Hname"] = item["Hname"].replace("’",'').replace("'",'')
+        # 对酒店入住人数进行清洗 people
+        if item["Room"]["People"] == "一":
+            item["Room"]["People"] = 1
+        elif item["Room"]["People"] == "二":
+            item["Room"]["People"] = 2
+        elif item["Room"]["People"] == "四":
+            item["Room"]["People"] = 4
         # 操作数据库
         self.unite_sql_hotel(item)
         self.unite_sql_room(item)
