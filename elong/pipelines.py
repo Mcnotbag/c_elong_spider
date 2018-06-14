@@ -54,6 +54,14 @@ class ElongPipeline(object):
             item["Room"]["People"] = 2
         elif item["Room"]["People"] == "四":
             item["Room"]["People"] = 4
+        elif item["Room"]["People"] == "六":
+            item["Room"]["People"] = 6
+
+        try:
+            int(item["Room"]["People"])
+        except Exception as e:
+            print(item["Room"]["People"])
+            item["Room"]["People"] = 2
         # 操作数据库
         self.unite_sql_hotel(item)
         self.unite_sql_room(item)

@@ -111,7 +111,7 @@ class ElSpider(scrapy.Spider):
             # 翻页结束进行城市切换
             else:
                 print("*"*50)
-                print("当前页的酒店数为--%d" % len(hotels_list))
+                # print("当前页的酒店数为--%d" % len(hotels_list))
                 print("当前城市Id---%s" %self.cur_cityid)
                 self.cur_cityid = self.get_city()
                 print("下个城市Id---%s" %self.cur_cityid)
@@ -164,11 +164,7 @@ class ElSpider(scrapy.Spider):
 
 
                     yield deepcopy(item)
-                    # print("-"*10)
-                    # print(item["Hname"])
-                    # print(item["HId"])
-                    # print(item["Room"]["RId"])
-                    # print(item["Room"]["Ptype"]["PId"])
+
         else:
             with open("detail_error.html","w",encoding="utf-8") as f:
                 f.write(html_str)
