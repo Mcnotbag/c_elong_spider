@@ -66,8 +66,7 @@ class ElongPipeline(object):
         self.unite_sql_hotel(item)
         self.unite_sql_room(item)
         self.unite_sql_price(item)
-        for image in item["Room"]["images"]:
-            self.insert_image(item,image)
+        self.insert_image(item)
         return item
 
     def insert_hotel(self,item):
@@ -158,11 +157,14 @@ class ElongPipeline(object):
             print(e)
             # self.conn.rollback()
 
-    def insert_image(self,item,image):
+    def insert_image(self,item):
 
-        insert = "INSERT INTO Image (HId, RId, Url) VALUES ('%s','%s','%s')" % (str(item["HId"]), str(item["Room"]["RId"]),str(image))
+        insert = "INSERT INTO Image (HId, RId, Url) VALUES"
 
+        for image in item["Room"]["images"]:
+            insert += "('%s','%s','%s')" %(str(item["HId"]), str(item["Room"]["RId"]),str(image))
 
+        insert = insert.replace(")(","),(")
         try:
             self.cur.execute(insert)
             # print("插入成功Image")
