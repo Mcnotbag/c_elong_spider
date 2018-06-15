@@ -10,7 +10,7 @@ import pymssql
 
 class ElongPipeline(object):
     def __init__(self):
-        self.conn = pymssql.connect(host='111.230.108.124:10433', user='user_spider', password='spider911#', database='HotelSpider')
+        self.conn = pymssql.connect(host='119.145.8.187:16433', user='sa', password='Ecaim6688.', database='HotelSpider')
         self.cur = self.conn.cursor()
     def close_spider(self,spider):
         self.cur.close()
